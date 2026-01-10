@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { logout } from "@/lib/auth";
 
 export default function NavBar() {
+  const { data: session } = useSession();
+
   return (
     <nav className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,25 +33,39 @@ export default function NavBar() {
             >
               Browse Jobs{" "}
             </Link>
-            <Link
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              href={"/jobs/post"}
-            >
-              Post a Job Link{" "}
-            </Link>
-            <Link
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              href={"/dashboard"}
-            >
-              Dashboard{" "}
-            </Link>
 
-            <Link
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              href={"/auth/signin"}
-            >
-              Sign In{" "}
-            </Link>
+            {session ? (
+              <>
+                <Link
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  href={"/jobs/post"}
+                >
+                  Post a Job Link{" "}
+                </Link>
+
+                <Link
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  href={"/dashboard"}
+                >
+                  Dashboard{" "}
+                </Link>
+                <button
+                  onClick={logout}
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium hover:cursor-pointer"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  href={"/auth/signin"}
+                >
+                  Sign In{" "}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

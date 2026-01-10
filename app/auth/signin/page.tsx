@@ -5,7 +5,7 @@ import { loginGitHub, loginGoogle } from "@/lib/auth";
 export default function SignInPage() {
   return (
     <div className="min-h-[calc(100vh-10rem)] flex items-center justify-center">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg mx-4">
+      <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-xl shadow-lg mx-4">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome to the FindAJob
@@ -15,7 +15,7 @@ export default function SignInPage() {
           </p>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-2">
           <button
             onClick={loginGitHub}
             className="hover:cursor-pointer w-full flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
@@ -34,7 +34,7 @@ export default function SignInPage() {
             </span>
           </button>
         </div>
-        <div className="mt-8">
+        <div className="mt-2">
           <button
             onClick={loginGoogle}
             className="hover:cursor-pointer w-full flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
