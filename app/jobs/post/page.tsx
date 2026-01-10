@@ -1,14 +1,45 @@
+"use client";
+import { FormEvent } from "react";
+
 export default function PostJobPage() {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      title: formData.get("title"),
+      company: formData.get("company"),
+      location: formData.get("location"),
+      type: formData.get("type"),
+      description: formData.get("description"),
+      salary: formData.get("salary") ?? null,
+    };
+
+    try {
+      await fetch("/api/jobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "Application/json",
+        },
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.log("Error posting the Job: ", error);
+    }
+  };
+
   return (
     <div className="min-h-[cal(100vh-10rem)] flex flex-col items-center">
       <div className="max-w-2xl w-full space-y-6 bg-white p-8 rounded-xl shadow-lg">
         <h1 className="flex justify-center text-4xl mb-6">Post a Job</h1>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="flex flex-col mb-6">
             <label>Job Title</label>
             <input
+              placeholder="e.g. Fullstack Junior Developer"
               type="text"
-              name="jobName"
+              name="title"
+              id="title"
               required
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             />
@@ -18,6 +49,7 @@ export default function PostJobPage() {
             <input
               type="text"
               name="company"
+              id="company"
               required
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             />
@@ -27,6 +59,7 @@ export default function PostJobPage() {
             <input
               type="text"
               name="location"
+              id="location"
               required
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             />
@@ -40,15 +73,17 @@ export default function PostJobPage() {
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             >
               <option value="">Select an option</option>
-              <option value="Remote">Remote</option>
-              <option value="Presential">Presential</option>
-              <option value="Hibrid">Hibrid</option>
+              <option value="remote">Remote</option>
+              <option value="presential">Presential</option>
+              <option value="hibrid">Hibrid</option>
             </select>
           </div>
           <div className="flex flex-col mb-6">
             <label>Description</label>
             <textarea
               rows={6}
+              name="description"
+              id="description"
               required
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             />
@@ -59,6 +94,7 @@ export default function PostJobPage() {
               type="text"
               name="salary"
               id="salary"
+              placeholder="e.g. $80.000 - $120.000"
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             />
           </div>
