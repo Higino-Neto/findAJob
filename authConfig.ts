@@ -1,5 +1,6 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Github from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 import { PrismaClient } from "./app/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 
@@ -20,6 +21,10 @@ export const authOptions = {
         },
       },
     }),
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID as string,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET as string,
+    })
   ],
   adapter: PrismaAdapter(prisma),
 };
