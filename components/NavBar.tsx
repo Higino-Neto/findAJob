@@ -40,7 +40,7 @@ export default function NavBar() {
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                   href={"/jobs/post"}
                 >
-                  Post a Job Link{" "}
+                  Post a Job{" "}
                 </Link>
 
                 <Link

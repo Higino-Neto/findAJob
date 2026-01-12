@@ -32,6 +32,7 @@ export default function PostJobPage() {
     <div className="min-h-[cal(100vh-10rem)] flex flex-col items-center">
       <div className="max-w-2xl w-full space-y-6 bg-white p-8 rounded-xl shadow-lg">
         <h1 className="flex justify-center text-4xl mb-6">Post a Job</h1>
+        <h1 className="text-2xl">Job Info</h1>
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col mb-6">
             <label>Job Title</label>
@@ -98,6 +99,15 @@ export default function PostJobPage() {
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             />
           </div>
+
+          <div className="flex flex-col ">
+            <h1 className="text-2xl mb-4">Questions for the Candidate</h1>
+            <button className="block mb-4 font-extrabold text-2xl border border-gray-500 h-10 w-10 rounded-full">
+              +
+            </button>
+
+          </div>
+          
           <div>
             <button
               type="submit"

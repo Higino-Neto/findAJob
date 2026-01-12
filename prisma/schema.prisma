@@ -7,6 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum QuestionType {
+  OPEN
+  MULTIPLE_CHOICE
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -68,6 +73,38 @@ model Job {
   postedById  String
 
   applications Application[]
+  questions Question[]
+}
+
+model Question {
+  id String @id @default(cuid())
+  text String
+  type QuestionType
+  order Int
+  jobId String
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  options Option[]
+  answers Answer[]
+}
+
+model Option {
+  id String @id @default(cuid())
+  text String
+  questionId String
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model Answer {
+  id String @id @default(cuid())
+  textAnswer String?
+  optionId String?
+  applicationId String
+  questionId String
+
+  question Question @relation(fields: [questionId], references: [id])
+  application Application @relation(fields: [applicationId], references: [id])  
 }
 
 model Application {
@@ -79,6 +116,8 @@ model Application {
 
   user User @relation(fields: [userId], references: [id])
   job  Job  @relation(fields: [jobId], references: [id])
+
+  answers Answer[]
 
   @@unique([userId, jobId])
 }
