@@ -7,6 +7,12 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -68,17 +74,63 @@ model Job {
   postedById  String
 
   applications Application[]
+  questions    Question[]
+}
+
+model Question {
+  id    String @id @default(cuid())
+  text  String
+  type  String
+  order Int
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  options Option[]
+  answers Answer[]
+
+  @@unique([jobId, order])
+  @@index([jobId, order])
+}
+
+model Option {
+  id         String @id @default(cuid())
+  text       String
+  order      Int
+  questionId String
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  answers Answer[]
+
+  @@unique([questionId, order])
+  @@index([questionId, order])
+}
+
+model Answer {
+  id            String  @id @default(cuid())
+  textAnswer    String?
+  optionId      String?
+  applicationId String
+  questionId    String
+
+  option      Option?     @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  question    Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, questionId, optionId])
 }
 
 model Application {
-  id        String   @id @default(cuid())
+  id        String            @id @default(cuid())
   jobId     String
   userId    String
-  status    String   @default("PENDING")
-  appliedAt DateTime @default(now())
+  status    ApplicationStatus @default(PENDING)
+  appliedAt DateTime          @default(now())
 
   user User @relation(fields: [userId], references: [id])
   job  Job  @relation(fields: [jobId], references: [id])
+
+  answers Answer[]
 
   @@unique([userId, jobId])
 }
