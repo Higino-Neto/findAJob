@@ -3,11 +3,6 @@ import { authOptions } from "@/authConfig";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-enum QuestionType {
-  OPEN,
-  MULTIPLE_CHOICE,
-}
-
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
 
@@ -21,20 +16,40 @@ export async function POST(request: Request) {
       data: {
         ...data.job,
         postedById: session.user.id as string,
-        
+
         questions: {
           create: data.questions.map(
-            (
-              q: {
+            (q: {
+              text: string;
+              type: string;
+              order: number;
+              options?: {
+                id: string;
                 text: string;
-                type: QuestionType;
                 order: number;
-              }
-            ) => ({
-              text: q.text,
-              type: q.type,
-              order: q.order,
-            })
+              }[];
+            }) => {
+              if (q.type === "open")
+                return {
+                  text: q.text,
+                  type: q.type,
+                  order: q.order,
+                };
+
+              return {
+                text: q.text,
+                type: q.type,
+                order: q.order,
+                options: {
+                  create: q.options?.map(
+                    (option: { id: string; text: string; order: number }) => ({
+                      text: option.text,
+                      order: option.order,
+                    })
+                  ),
+                },
+              };
+            }
           ),
         },
       },

@@ -5,7 +5,14 @@ interface Question {
   id: string;
   type: "open" | "multiple";
   text?: string;
+  options?: {
+    id: string;
+    text: string;
+    order: number;
+  }[];
 }
+
+const optionMarks = "abcdefghijklmnopqrstuvwxyz".split("");
 
 export default function PostJobPage() {
   const [questionType, setQuestionType] = useState<"open" | "multiple">("open");
@@ -13,16 +20,51 @@ export default function PostJobPage() {
   const [formKey, setFormKey] = useState(0);
 
   const addQuestion = () => {
-    const newQuestion: Question = {
+    let newQuestion: Question = {
       id: Date.now().toString(),
       type: questionType,
     };
+    if (newQuestion.type === "multiple") {
+      newQuestion = {
+        id: Date.now().toString(),
+        type: questionType,
+        options: [
+          {
+            id: Date.now().toString(),
+            text: "",
+            order: 0
+          },
+          {
+            id: Date.now().toString(),
+            text: "",
+            order: 1,
+          },
+        ],
+      };
+    }
 
     setQuestion((prev) => [...prev, newQuestion]);
   };
 
+  const addOption = (optionIndex: number, questionIndex: number) => {};
+
   const deleteQuestion = (id: string) => {
     setQuestion((prev) => prev.filter((value) => value.id !== id));
+  };
+
+  const deleteOption = (optionIndex: number, questionIndex: number) => {
+    setQuestion((prev) =>
+      prev.map((question, qIndex) => {
+        if (qIndex !== questionIndex) return question;
+
+        return {
+          ...question,
+          options: question.options?.filter(
+            (_, oIndex) => oIndex !== optionIndex
+          ),
+        };
+      })
+    );
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -42,6 +84,11 @@ export default function PostJobPage() {
     const questionData: {
       text: string;
       type: "open" | "multiple";
+      options?: {
+        id: string;
+        text: string;
+        order: number;
+      }[];
       order: number;
     }[] = [];
 
@@ -49,6 +96,7 @@ export default function PostJobPage() {
       questionData.push({
         text: question.text ?? "",
         type: question.type,
+        options: question.options ?? [],
         order: id,
       });
     });
@@ -67,7 +115,7 @@ export default function PostJobPage() {
     } catch (error) {
       console.log("Error posting the Job: ", error);
     }
-    setFormKey(prev => prev + 1);
+    setFormKey((prev) => prev + 1);
     setQuestion([]);
   };
 
@@ -76,6 +124,8 @@ export default function PostJobPage() {
       <div className="max-w-2xl w-full space-y-6 bg-white p-8 rounded-xl shadow-lg">
         <h1 className="flex justify-center text-4xl mb-6">Post a Job</h1>
         <h1 className="text-2xl">Job Info</h1>
+
+        {JSON.stringify(questions)}
 
         <form key={formKey} onSubmit={handleSubmit}>
           <div className="flex flex-col mb-6">
@@ -171,10 +221,11 @@ export default function PostJobPage() {
                 <hr className="mt-0.5 mb-6 mx-2 border-dotted" />
               </div>
 
-              {questions.map((question) => (
-                <div key={question.id}>
+              {questions.map((question, questionIndex) => (
+                <div key={questionIndex}>
+                  <h1>{`Question ${questionIndex + 1}`}</h1>
                   {question.type === "open" ? (
-                    <div className="flex flex-col">
+                    <div className="flex flex-col my-2 bg-gray-50 p-4 rounded-md">
                       <input
                         onChange={(e) => {
                           setQuestion((prev) =>
@@ -194,17 +245,88 @@ export default function PostJobPage() {
                       </p>
                       <hr className="mt-0.5 border-dotted" />
 
-                      <div className="">
+                      <div className="flex justify-end">
                         <button
+                          type="button"
                           onClick={() => deleteQuestion(question.id)}
-                          className="bg-indigo-500 w-20 text-gray-50 rounded-md mb-6 mt-2 hover:cursor-pointer"
+                          className="bg-indigo-500 w-20 text-gray-50 rounded-md mt-2 hover:cursor-pointer"
                         >
                           delete
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div>multiple here</div>
+                    <div className="flex flex-col my-2 bg-gray-50 p-4 rounded-md">
+                      <input
+                        onChange={(e) => {
+                          setQuestion((prev) =>
+                            prev.map((thisQuestion) =>
+                              thisQuestion.id === question.id
+                                ? { ...thisQuestion, text: e.target.value }
+                                : thisQuestion
+                            )
+                          );
+                        }}
+                        placeholder="Question"
+                        type="text"
+                        className="block mt-1 border border-gray-200  rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
+                      />
+
+                      <div className="flex flex-col gap-3 mt-3 ml-3">
+                        {question.options?.map((option, optionIndex) => (
+                          <div key={optionIndex} className="flex gap-1">
+                            <p className="text-gray-400 mt-1">
+                              {optionMarks[optionIndex]})
+                            </p>
+                            <input
+                              onChange={(e) => {
+                                setQuestion((prev) =>
+                                  prev.map((question, innerQuestionIndex) => {
+                                    if (innerQuestionIndex !== questionIndex)
+                                      return question;
+
+                                    return {
+                                      ...question,
+                                      options: question.options?.map(
+                                        (innerOption, innerOptionIndex) => {
+                                          if (optionIndex !== innerOptionIndex)
+                                            return innerOption;
+
+                                          return {
+                                            ...innerOption,
+                                            text: e.target.value,
+                                          };
+                                        }
+                                      ),
+                                    };
+                                  })
+                                );
+                              }}
+                              className=" p-1 pl-3 w-full ml-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                deleteOption(optionIndex, questionIndex)
+                              }
+                              className="bg-indigo-500 w-20 text-gray-50 rounded-md hover:cursor-pointer shadow-md"
+                            >
+                              delete
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => deleteQuestion(question.id)}
+                          className="bg-indigo-500 w-20 text-gray-50 rounded-md mt-4 hover:cursor-pointer"
+                        >
+                          delete
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}
@@ -221,7 +343,7 @@ export default function PostJobPage() {
               <div className="absolute left-full ml-2 top-0 mt-3">
                 <select
                   onChange={(e) => {
-                      setQuestionType(e.target.value as 'open' | 'multiple');
+                    setQuestionType(e.target.value as "open" | "multiple");
                   }}
                   className="bg-gray-100 px-4 py-2 rounded-md hover:cursor-pointer shadow-sm"
                 >
