@@ -46,7 +46,7 @@ export default function BrowseJobs() {
             <div key={job.id}>
               <button
                 onClick={() => handleShowHeader(job)}
-                className="transition-all duration-500 focus:ring-2 w-full border border-gray-300 text-start bg-white p-4 rounded-lg hover:cursor-pointer"
+                className="transition-all shadow-lg duration-500 focus:ring-2 w-full border border-gray-300 text-start bg-white p-4 rounded-lg hover:cursor-pointer"
               >
                 <p>{job.title}</p>
                 <p>{job.company}</p>
@@ -58,8 +58,8 @@ export default function BrowseJobs() {
         })}
       </div>
       {showHeader ? (
-        <div className="ring-1 w-1/2 flex flex-col border border-gray-300 rounded-lg ">
-          <div className="flex flex-col h-screen text-start bg-white p-4 rounded-lg hover:cursor-pointer">
+        <div className=" w-1/2 flex flex-col border border-gray-300 rounded-lg shadow-lg">
+          <div className="flex flex-col h-screen text-start bg-white p-4 rounded-lg">
             <a className="text-2xl">{showJob.title}</a>
             <a className="">{showJob.company}</a>
             <a className="mt-6">{showJob.description}</a>

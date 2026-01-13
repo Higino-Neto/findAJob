@@ -1,12 +1,35 @@
 "use client";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
+
+interface Question {
+  id: string;
+  type: "open" | "multiple";
+  text?: string;
+}
 
 export default function PostJobPage() {
+  const [questionType, setQuestionType] = useState<"open" | "multiple">("open");
+  const [questions, setQuestion] = useState<Question[]>([]);
+  const [formKey, setFormKey] = useState(0);
+
+  const addQuestion = () => {
+    const newQuestion: Question = {
+      id: Date.now().toString(),
+      type: questionType,
+    };
+
+    setQuestion((prev) => [...prev, newQuestion]);
+  };
+
+  const deleteQuestion = (id: string) => {
+    setQuestion((prev) => prev.filter((value) => value.id !== id));
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    const data = {
+    const jobData = {
       title: formData.get("title"),
       company: formData.get("company"),
       location: formData.get("location"),
@@ -15,17 +38,37 @@ export default function PostJobPage() {
       salary: formData.get("salary") ?? null,
     };
 
+    const rawQuestionData = questions.map((q) => ({ ...q }));
+    const questionData: {
+      text: string;
+      type: "open" | "multiple";
+      order: number;
+    }[] = [];
+
+    rawQuestionData.forEach((question, id) => {
+      questionData.push({
+        text: question.text ?? "",
+        type: question.type,
+        order: id,
+      });
+    });
+
     try {
       await fetch("/api/jobs", {
         method: "POST",
         headers: {
           "Content-Type": "Application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          job: jobData,
+          questions: questionData,
+        }),
       });
     } catch (error) {
       console.log("Error posting the Job: ", error);
     }
+    setFormKey(prev => prev + 1);
+    setQuestion([]);
   };
 
   return (
@@ -33,9 +76,10 @@ export default function PostJobPage() {
       <div className="max-w-2xl w-full space-y-6 bg-white p-8 rounded-xl shadow-lg">
         <h1 className="flex justify-center text-4xl mb-6">Post a Job</h1>
         <h1 className="text-2xl">Job Info</h1>
-        <form onSubmit={handleSubmit}>
+
+        <form key={formKey} onSubmit={handleSubmit}>
           <div className="flex flex-col mb-6">
-            <label>Job Title</label>
+            <label>Job Title *</label>
             <input
               placeholder="e.g. Fullstack Junior Developer"
               type="text"
@@ -45,8 +89,9 @@ export default function PostJobPage() {
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             />
           </div>
+
           <div className="flex flex-col mb-6">
-            <label>Company</label>
+            <label>Company *</label>
             <input
               type="text"
               name="company"
@@ -55,8 +100,9 @@ export default function PostJobPage() {
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             />
           </div>
+
           <div className="flex flex-col mb-6">
-            <label>Location</label>
+            <label>Location *</label>
             <input
               type="text"
               name="location"
@@ -65,8 +111,9 @@ export default function PostJobPage() {
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             />
           </div>
+
           <div className="flex flex-col mb-6">
-            <label>Job Type</label>
+            <label>Job Type *</label>
             <select
               name="type"
               id="type"
@@ -79,8 +126,9 @@ export default function PostJobPage() {
               <option value="hibrid">Hibrid</option>
             </select>
           </div>
+
           <div className="flex flex-col mb-6">
-            <label>Description</label>
+            <label>Description *</label>
             <textarea
               rows={6}
               name="description"
@@ -89,8 +137,9 @@ export default function PostJobPage() {
               className="block mt-1 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
             />
           </div>
+
           <div className="flex flex-col mb-6">
-            <label>Salary</label>
+            <label>Salary (Optional)</label>
             <input
               type="text"
               name="salary"
@@ -100,14 +149,89 @@ export default function PostJobPage() {
             />
           </div>
 
-          <div className="flex flex-col ">
-            <h1 className="text-2xl mb-4">Questions for the Candidate</h1>
-            <button className="block mb-4 font-extrabold text-2xl border border-gray-500 h-10 w-10 rounded-full">
-              +
-            </button>
+          <div className="flex flex-col">
+            <h1 className="text-2xl mb-4 mt-10">Questions for the Candidate</h1>
+            <p className="mb-6">
+              You can add questions to see if the candidate fits the company
+              environment
+            </p>
 
+            <div>
+              <div className="flex flex-col scale-90 border p-3 rounded-lg border-gray-700 shadow-md mb-6">
+                <p className="text-gray-700">Ex:</p>
+                <input
+                  placeholder="e.g. What are your salary expectations?"
+                  type="text"
+                  disabled
+                  className="block mt-1 border border-gray-100  rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
+                />
+                <p className="mt-2 px-3 text-gray-400 select-none">
+                  e.g. $80.000 - $100.000
+                </p>
+                <hr className="mt-0.5 mb-6 mx-2 border-dotted" />
+              </div>
+
+              {questions.map((question) => (
+                <div key={question.id}>
+                  {question.type === "open" ? (
+                    <div className="flex flex-col">
+                      <input
+                        onChange={(e) => {
+                          setQuestion((prev) =>
+                            prev.map((thisQuestion) =>
+                              thisQuestion.id === question.id
+                                ? { ...thisQuestion, text: e.target.value }
+                                : thisQuestion
+                            )
+                          );
+                        }}
+                        placeholder="Question"
+                        type="text"
+                        className="block mt-1 border border-gray-200  rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 px-3 p-2"
+                      />
+                      <p className="mt-2 px-3 text-gray-400 select-none">
+                        Answer here
+                      </p>
+                      <hr className="mt-0.5 border-dotted" />
+
+                      <div className="">
+                        <button
+                          onClick={() => deleteQuestion(question.id)}
+                          className="bg-indigo-500 w-20 text-gray-50 rounded-md mb-6 mt-2 hover:cursor-pointer"
+                        >
+                          delete
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>multiple here</div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="relative w-fit">
+              <button
+                type="button"
+                onClick={addQuestion}
+                className=" transition-all shadow-lg duration-200 hover:scale-101 w-40 text-lg text-gray-50 mb-25 flex items-start justify-center my-3 p-3 bg-indigo-500 rounded-md hover:cursor-pointer"
+              >
+                new question
+              </button>
+              <div className="absolute left-full ml-2 top-0 mt-3">
+                <select
+                  onChange={(e) => {
+                      setQuestionType(e.target.value as 'open' | 'multiple');
+                  }}
+                  className="bg-gray-100 px-4 py-2 rounded-md hover:cursor-pointer shadow-sm"
+                >
+                  <option value="open">Open Question</option>
+                  <option value="multiple">Multiple Choice</option>
+                </select>
+              </div>
+            </div>
           </div>
-          
+
           <div>
             <button
               type="submit"

@@ -3,6 +3,11 @@ import { authOptions } from "@/authConfig";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+enum QuestionType {
+  OPEN,
+  MULTIPLE_CHOICE,
+}
+
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
 
@@ -14,8 +19,24 @@ export async function POST(request: Request) {
 
     const job = await prisma.job.create({
       data: {
-        ...data,
+        ...data.job,
         postedById: session.user.id as string,
+        
+        questions: {
+          create: data.questions.map(
+            (
+              q: {
+                text: string;
+                type: QuestionType;
+                order: number;
+              }
+            ) => ({
+              text: q.text,
+              type: q.type,
+              order: q.order,
+            })
+          ),
+        },
       },
     });
 
@@ -41,4 +62,3 @@ export async function GET(request: Request) {
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
-

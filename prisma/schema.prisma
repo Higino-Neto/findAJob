@@ -7,11 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum QuestionType {
-  OPEN
-  MULTIPLE_CHOICE
-}
-
 enum ApplicationStatus {
   PENDING
   APPROVED
@@ -85,7 +80,7 @@ model Job {
 model Question {
   id    String       @id @default(cuid())
   text  String
-  type  QuestionType
+  type  String
   order Int
   jobId String
   job   Job          @relation(fields: [jobId], references: [id], onDelete: Cascade)
