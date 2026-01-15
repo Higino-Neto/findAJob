@@ -1,6 +1,7 @@
 "use client";
 import { FormEvent, useState } from "react";
 
+
 interface Question {
   id: string;
   type: "open" | "multiple";
@@ -21,23 +22,23 @@ export default function PostJobPage() {
 
   const addQuestion = () => {
     let newQuestion: Question = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       type: questionType,
     };
     if (newQuestion.type === "multiple") {
       newQuestion = {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         type: questionType,
         options: [
           {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             text: "",
-            order: 0
+            order: 0,
           },
           {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             text: "",
-            order: 1,
+            order: 0,
           },
         ],
       };
@@ -46,7 +47,25 @@ export default function PostJobPage() {
     setQuestion((prev) => [...prev, newQuestion]);
   };
 
-  const addOption = (optionIndex: number, questionIndex: number) => {};
+  const addOption = (questionIndex: number) => {
+    setQuestion((prev) =>
+      prev.map((question, qIndex) => {
+        if (qIndex !== questionIndex) return question;
+
+        return {
+          ...question,
+          options: [
+            ...(question.options ?? []),
+            {
+              id: crypto.randomUUID(),
+              text: "",
+              order:  0,
+            },
+          ],
+        };
+      })
+    );
+  };
 
   const deleteQuestion = (id: string) => {
     setQuestion((prev) => prev.filter((value) => value.id !== id));
@@ -124,8 +143,6 @@ export default function PostJobPage() {
       <div className="max-w-2xl w-full space-y-6 bg-white p-8 rounded-xl shadow-lg">
         <h1 className="flex justify-center text-4xl mb-6">Post a Job</h1>
         <h1 className="text-2xl">Job Info</h1>
-
-        {JSON.stringify(questions)}
 
         <form key={formKey} onSubmit={handleSubmit}>
           <div className="flex flex-col mb-6">
@@ -274,7 +291,10 @@ export default function PostJobPage() {
 
                       <div className="flex flex-col gap-3 mt-3 ml-3">
                         {question.options?.map((option, optionIndex) => (
-                          <div key={optionIndex} className="flex gap-1">
+                          <div
+                            key={optionIndex}
+                            className="flex gap-1 relative"
+                          >
                             <p className="text-gray-400 mt-1">
                               {optionMarks[optionIndex]})
                             </p>
@@ -304,24 +324,33 @@ export default function PostJobPage() {
                               }}
                               className=" p-1 pl-3 w-full ml-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                deleteOption(optionIndex, questionIndex)
-                              }
-                              className="bg-indigo-500 w-20 text-gray-50 rounded-md hover:cursor-pointer shadow-md"
-                            >
-                              delete
-                            </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  deleteOption(optionIndex, questionIndex)
+                                }
+                                className="bg-indigo-500 absolute right-1 top-1 w-16 text-gray-50 rounded-md hover:cursor-pointer shadow-md"
+                              >
+                                delete
+                              </button>
                           </div>
                         ))}
                       </div>
 
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => addOption(questionIndex)}
+                          className="bg-indigo-500 w-20 text-gray-50 rounded-md mt-4 hover:cursor-pointer h-7 shadow-md"
+                        >
+                          + Option
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => deleteQuestion(question.id)}
-                          className="bg-indigo-500 w-20 text-gray-50 rounded-md mt-4 hover:cursor-pointer"
+                          className="bg-indigo-500 w-20 text-gray-50 rounded-md mt-4 hover:cursor-pointer h-7 shadow-md"
                         >
                           delete
                         </button>
