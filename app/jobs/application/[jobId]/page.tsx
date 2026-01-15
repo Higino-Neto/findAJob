@@ -21,7 +21,6 @@ export default function JobApplication() {
       body: formData,
     });
   };
-
   return (
     <div className="flex flex-col items-center">
       <div className="bg-white max-w-4xl w-full rounded-xl shadow-lg h-screen">
