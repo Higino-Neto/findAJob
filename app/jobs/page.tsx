@@ -1,4 +1,5 @@
-'use client';
+"use client";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Job = {
@@ -14,9 +15,9 @@ type Job = {
 };
 
 export default function BrowseJobs() {
+  const router = useRouter();
   const [jobs, setJobs] = useState([]);
-  const [showHeader, setShowHeader] = useState(false);
-  const [showJob, setShowJob] = useState(Object);
+  const [showJob, setShowJob] = useState<Job | null>(null);
 
   useEffect(() => {
     const loadJobs = async () => {
@@ -33,7 +34,6 @@ export default function BrowseJobs() {
   }, []);
 
   const handleShowHeader = (job: Job) => {
-    setShowHeader(true);
     setShowJob(job);
   };
 
@@ -57,16 +57,24 @@ export default function BrowseJobs() {
           );
         })}
       </div>
-      {showHeader ? (
+      {showJob && (
         <div className=" w-1/2 flex flex-col border border-gray-300 rounded-lg shadow-lg">
           <div className="flex flex-col h-screen text-start bg-white p-4 rounded-lg">
             <a className="text-2xl">{showJob.title}</a>
+            <button
+              onClick={() => router.push(`/jobs/application/${showJob.id}`)}
+              className="bg-indigo-500 w-40 px-2 py-1 rounded-md shadow-md mt-6 mb-3 text-gray-50"
+            >
+              Apply to this job
+            </button>
+            <a className="">{showJob.type}</a>
             <a className="">{showJob.company}</a>
+            <a className="">{showJob.location}</a>
             <a className="mt-6">{showJob.description}</a>
             <a className="">{showJob.salary}</a>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
