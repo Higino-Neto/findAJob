@@ -63,11 +63,11 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const session = await getServerSession(authOptions);
+  // const session = await getServerSession(authOptions);
 
-  if (!session?.user) {
-    return NextResponse.redirect(new URL("auth/signin", request.url));
-  }
+  // if (!session?.user) {
+  //   return NextResponse.redirect(new URL("auth/signin", request.url));
+  // }
 
   try {
     const jobs = await prisma.job.findMany();

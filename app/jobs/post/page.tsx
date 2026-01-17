@@ -1,8 +1,7 @@
 "use client";
 import { FormEvent, useState } from "react";
 
-
-interface Question {
+type Question = {
   id: string;
   type: "open" | "multiple";
   text?: string;
@@ -59,11 +58,11 @@ export default function PostJobPage() {
             {
               id: crypto.randomUUID(),
               text: "",
-              order:  0,
+              order: 0,
             },
           ],
         };
-      })
+      }),
     );
   };
 
@@ -79,10 +78,10 @@ export default function PostJobPage() {
         return {
           ...question,
           options: question.options?.filter(
-            (_, oIndex) => oIndex !== optionIndex
+            (_, oIndex) => oIndex !== optionIndex,
           ),
         };
-      })
+      }),
     );
   };
 
@@ -104,7 +103,6 @@ export default function PostJobPage() {
       text: string;
       type: "open" | "multiple";
       options?: {
-        id: string;
         text: string;
         order: number;
       }[];
@@ -112,10 +110,17 @@ export default function PostJobPage() {
     }[] = [];
 
     rawQuestionData.forEach((question, id) => {
+      const filteredOptions = question.options?.map((option, index) => {
+        return {
+          text: option.text,
+          order: index,
+        };
+      });
+
       questionData.push({
         text: question.text ?? "",
         type: question.type,
-        options: question.options ?? [],
+        options: filteredOptions ?? [],
         order: id,
       });
     });
@@ -147,6 +152,7 @@ export default function PostJobPage() {
         <form key={formKey} onSubmit={handleSubmit}>
           <div className="flex flex-col mb-6">
             <label>Job Title *</label>
+            {JSON.stringify(questions)}
             <input
               placeholder="e.g. Fullstack Junior Developer"
               type="text"
@@ -249,8 +255,8 @@ export default function PostJobPage() {
                             prev.map((thisQuestion) =>
                               thisQuestion.id === question.id
                                 ? { ...thisQuestion, text: e.target.value }
-                                : thisQuestion
-                            )
+                                : thisQuestion,
+                            ),
                           );
                         }}
                         placeholder="Question"
@@ -280,8 +286,8 @@ export default function PostJobPage() {
                             prev.map((thisQuestion) =>
                               thisQuestion.id === question.id
                                 ? { ...thisQuestion, text: e.target.value }
-                                : thisQuestion
-                            )
+                                : thisQuestion,
+                            ),
                           );
                         }}
                         placeholder="Question"
@@ -316,24 +322,24 @@ export default function PostJobPage() {
                                             ...innerOption,
                                             text: e.target.value,
                                           };
-                                        }
+                                        },
                                       ),
                                     };
-                                  })
+                                  }),
                                 );
                               }}
                               className=" p-1 pl-3 w-full ml-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
 
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  deleteOption(optionIndex, questionIndex)
-                                }
-                                className="bg-indigo-500 absolute right-1 top-1 w-16 text-gray-50 rounded-md hover:cursor-pointer shadow-md"
-                              >
-                                delete
-                              </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                deleteOption(optionIndex, questionIndex)
+                              }
+                              className="bg-indigo-500 absolute right-1 top-1 w-16 text-gray-50 rounded-md hover:cursor-pointer shadow-md"
+                            >
+                              delete
+                            </button>
                           </div>
                         ))}
                       </div>
