@@ -45,11 +45,11 @@ export async function POST(request: Request) {
                     (option: { id: string; text: string; order: number }) => ({
                       text: option.text,
                       order: option.order,
-                    })
+                    }),
                   ),
                 },
               };
-            }
+            },
           ),
         },
       },
@@ -63,15 +63,22 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  // const session = await getServerSession(authOptions);
+  const { searchParams } = new URL(request.url);
 
-  // if (!session?.user) {
-  //   return NextResponse.redirect(new URL("auth/signin", request.url));
-  // }
+  const page = Number(searchParams.get("page") ?? 1);
+  const take = 10;
+  const skip = (page - 1) * take;
 
   try {
-    const jobs = await prisma.job.findMany();
-    return NextResponse.json(jobs);
+    const totalJobs = await prisma.job.count();
+    const jobs = await prisma.job.findMany({
+      take,
+      skip,
+      orderBy: {
+        postedAt: "desc",
+      },
+    });
+    return NextResponse.json({ jobs, totalJobs, take });
   } catch (error) {
     console.error("Error getting jobs: ", error);
     return new NextResponse("Internal Server Error", { status: 500 });

@@ -10,7 +10,7 @@ type Question = {
     text: string;
     order: number;
   }[];
-}
+};
 
 const optionMarks = "abcdefghijklmnopqrstuvwxyz".split("");
 
@@ -152,7 +152,7 @@ export default function PostJobPage() {
         <form key={formKey} onSubmit={handleSubmit}>
           <div className="flex flex-col mb-6">
             <label>Job Title *</label>
-            {JSON.stringify(questions)}
+
             <input
               placeholder="e.g. Fullstack Junior Developer"
               type="text"

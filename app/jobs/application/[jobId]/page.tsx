@@ -28,6 +28,7 @@ export default function JobApplication() {
 
   const [file, setFile] = useState<File | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [formKey, setFormKey] = useState(0);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -95,11 +96,15 @@ export default function JobApplication() {
         answer: answerData,
       }),
     });
+
+    setFormKey((prev) => prev + 1);
+    setFile(null);
+    setQuestions(questions);
   };
   return (
     <div className="flex flex-col items-center">
       <div className="bg-white max-w-4xl w-full rounded-xl shadow-lg min-h-screen">
-        <form className="mt-10" onSubmit={handleSubmit}>
+        <form className="mt-10" onSubmit={handleSubmit} key={formKey}>
           <div className="flex flex-col items-center">
             <h1 className="text-2xl">Application</h1>
             <h1 className="text-xl mt-10">Put your curriculum here</h1>
