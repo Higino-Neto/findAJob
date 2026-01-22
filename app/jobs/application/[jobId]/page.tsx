@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ApplicationStatus } from "@/app/generated/prisma";
 
 type Question = {
   id: string;
@@ -15,14 +16,8 @@ type Question = {
   }[];
 };
 
-enum ApplicationStatus {
-  PENDING,
-  APPROVED,
-  REJECTED,
-}
-
 export default function JobApplication() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const params = useParams();
   const jobId = params.jobId as string;
 
@@ -45,37 +40,23 @@ export default function JobApplication() {
 
     const formData = new FormData(e.currentTarget);
 
-    const curriculumFormData = new FormData();
-
-    if (file) {
-      curriculumFormData.append("file", file);
-      curriculumFormData.append("jobId", jobId);
-
-      await fetch("/api/jobs/curriculum", {
-        method: "POST",
-        body: curriculumFormData,
-      });
-    } else {
-      alert("Envie o currículo antes de continuar!");
-      return;
-    }
-
     const applicationData = {
       jobId: jobId,
-      userId: session?.user.id,
+      userId: session?.user.id as string,
       status: ApplicationStatus.PENDING,
     };
+
     const answerData = [];
 
     for (let question of questions) {
       if (question.type === "open") {
-        const textAnswer = formData.get(question.id);
+        const textAnswer = formData.get(question.id) as string;
         answerData.push({
           questionId: question.id,
           textAnswer: textAnswer,
         });
       } else {
-        const optionId = formData.get(question.id);
+        const optionId = formData.get(question.id) as string;
 
         if (optionId) {
           answerData.push({
@@ -86,21 +67,37 @@ export default function JobApplication() {
       }
     }
 
-    await fetch("/api/jobs/application", {
+    await fetch("/api/jobs/applications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         application: applicationData,
-        answer: answerData,
+        answers: answerData,
       }),
     });
+    
+    const curriculumFormData = new FormData();
+
+    if (file) {
+      curriculumFormData.append("file", file);
+      curriculumFormData.append("jobId", jobId);
+
+      await fetch("/api/jobs/applications/upload-curriculum", {
+        method: "POST",
+        body: curriculumFormData,
+      });
+    } else {
+      alert("Envie o currículo antes de continuar!");
+      return;
+    }
 
     setFormKey((prev) => prev + 1);
     setFile(null);
     setQuestions(questions);
   };
+
   return (
     <div className="flex flex-col items-center">
       <div className="bg-white max-w-4xl w-full rounded-xl shadow-lg min-h-screen">
