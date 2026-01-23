@@ -1,24 +1,25 @@
 import { authOptions } from "@/authConfig";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
 
-  if (!session)
+  if (!session) {
     return NextResponse.redirect(new URL("/auth/signin", request.url));
+  }
 
   try {
     const data = await request.formData();
+
     const file = data.get("file") as File;
+    const bufferFile = Buffer.from(await file.arrayBuffer());
     const jobId = data.get("jobId") as string;
     const userId = session.user.id;
     const filePath = `${userId}/${jobId}.pdf`;
 
-    const bufferFile = Buffer.from(await file.arrayBuffer());
-
-    const { error } = await supabaseAdmin.storage
+    const { data: supabaseData, error } = await supabaseAdmin.storage
       .from("curriculum")
       .upload(filePath, bufferFile, {
         contentType: file.type,
@@ -30,8 +31,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error sending curriculum to Storage", error);
+  } catch (err) {
+    console.error("Error sending file into Storage Object");
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
