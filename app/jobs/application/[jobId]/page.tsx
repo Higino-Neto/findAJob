@@ -17,8 +17,12 @@ export default function JobApplication() {
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      const data = await fetch(`/api/questionsWithOptions/${jobId}`);
-      const questionsWithOptions: QuestionWithOptions[] = await data.json();
+      const questionsWithOptionsRes = await fetch(
+        `/api/questionsWithOptions/${jobId}`,
+      );
+      if (!questionsWithOptionsRes.ok)
+        throw new Error("Error getting questionsWithOptions");
+      const questionsWithOptions: QuestionWithOptions[] = await questionsWithOptionsRes.json();
       setQuestions(questionsWithOptions ?? []);
     };
 
@@ -67,7 +71,7 @@ export default function JobApplication() {
         answers: answerData,
       }),
     });
-    
+
     const curriculumFormData = new FormData();
 
     if (file) {
