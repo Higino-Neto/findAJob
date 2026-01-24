@@ -4,17 +4,7 @@ import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ApplicationStatus } from "@/app/generated/prisma";
-
-type Question = {
-  id: string;
-  type: "open" | "multiple";
-  text?: string;
-  options?: {
-    id: string;
-    text: string;
-    order: number;
-  }[];
-};
+import { QuestionWithOptions } from "@/types/questionsWithOptions";
 
 export default function JobApplication() {
   const { data: session } = useSession();
@@ -22,14 +12,14 @@ export default function JobApplication() {
   const jobId = params.jobId as string;
 
   const [file, setFile] = useState<File | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<QuestionWithOptions[]>([]);
   const [formKey, setFormKey] = useState(0);
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      const data = await fetch(`/api/questions/${jobId}`);
-      const questions = await data.json();
-      setQuestions(questions ?? []);
+      const data = await fetch(`/api/questionsWithOptions/${jobId}`);
+      const questionsWithOptions: QuestionWithOptions[] = await data.json();
+      setQuestions(questionsWithOptions ?? []);
     };
 
     fetchQuestions();

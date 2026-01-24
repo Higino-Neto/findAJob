@@ -5,30 +5,23 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ jobId: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
-
   if (!session) {
     return NextResponse.redirect(new URL("/auth/signin", request.url));
   }
-  const { jobId } = await params;
 
   try {
-    const questionsWithOptions = await prisma.question.findMany({
+    const { id } = await params;
+    const user = await prisma.user.findUnique({
       where: {
-        jobId: jobId,
-      },
-      include: {
-        options: true,
-      },
-      orderBy: {
-        order: "asc",
+        id: id,
       },
     });
-    return NextResponse.json(questionsWithOptions);
+    return NextResponse.json(user);
   } catch (error) {
-    console.error("Error getting questions: ", error);
+    console.error("Error getting user from DB: ", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

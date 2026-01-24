@@ -21,12 +21,11 @@ export default function ClientBrowseJobs({ page }: { page: number }) {
   // const [jobs, setJobs] = useState([]);
   const [showJob, setShowJob] = useState<Job | null>(null);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["jobs", page],
     queryFn: async () => {
       const res = await fetch(`/api/jobs?page=${page}`);
       return await res.json();
-      
     },
 
     placeholderData: keepPreviousData,
