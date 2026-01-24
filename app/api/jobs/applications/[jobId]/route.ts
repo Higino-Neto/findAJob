@@ -24,8 +24,6 @@ export async function GET(
       },
     });
 
-    console.log(applicationsWithAnswers);
-
     return NextResponse.json(applicationsWithAnswers);
   } catch (error) {
     console.error("Error getting applications by JobId: ", error);
