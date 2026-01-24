@@ -36,11 +36,41 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
     if (!userRes.ok) throw new Error("Error fetching user");
     const user: User = await userRes.json();
 
-    const questionsRes = await fetch(`/api/questionsWithOptions/${application.jobId}`);
+    const questionsRes = await fetch(`/api/questions/${application.jobId}`);
     if (!questionsRes.ok) throw new Error("Error getting questions");
-    const questionsWithOptions: QuestionWithOptions[] = await questionsRes.json();
+    const questions: QuestionWithOptions[] = await questionsRes.json();
 
     const answers = application.answers;
+
+    const questionsWithAnswers = [];
+
+    for (const question of questions) {
+      if (question.type === "OPEN") {
+        questionsWithAnswers.push({
+          id: question.id,
+          order: question.order,
+          commandText: question.text,
+          answer:
+            answers.find((answer) => answer.id === question.id)?.textAnswer ??
+            "",
+        });
+      } else if (question.type === "MULTIPLE") {
+        questionsWithAnswers.push({
+          id: question.id,
+          order: question.order,
+          commandText: question.text,
+          options: question.options ?? [],
+          selectedOption:
+            answers.find((answer) => answer.id === question.id)?.optionId ?? "",
+        });
+      }
+    }
+
+    const applicationData = {
+      username: user.name,
+      email: user.email,
+      questionsWithAnswers: questionsWithAnswers,
+    };
 
     setSelectedApplication(application);
   };

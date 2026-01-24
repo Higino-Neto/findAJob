@@ -1,5 +1,5 @@
 export type QuestionWithOptions = {
-    options: {
+    options?: {
         id: string;
         text: string;
         order: number;

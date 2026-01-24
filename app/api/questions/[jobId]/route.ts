@@ -16,7 +16,7 @@ export async function GET(
   const { jobId } = await params;
 
   try {
-    const questionsWithOptions: QuestionWithOptions[] = await prisma.question.findMany({
+    const questions: QuestionWithOptions[] = await prisma.question.findMany({
       where: {
         jobId: jobId,
       },
@@ -27,7 +27,7 @@ export async function GET(
         order: "asc",
       },
     });
-    return NextResponse.json(questionsWithOptions);
+    return NextResponse.json(questions);
   } catch (error) {
     console.error("Error getting questions: ", error);
     return new NextResponse("Internal Server Error", { status: 500 });

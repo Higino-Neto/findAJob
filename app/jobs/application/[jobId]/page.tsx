@@ -17,13 +17,13 @@ export default function JobApplication() {
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      const questionsWithOptionsRes = await fetch(
-        `/api/questionsWithOptions/${jobId}`,
+      const questionsRes = await fetch(
+        `/api/questions/${jobId}`,
       );
-      if (!questionsWithOptionsRes.ok)
-        throw new Error("Error getting questionsWithOptions");
-      const questionsWithOptions: QuestionWithOptions[] = await questionsWithOptionsRes.json();
-      setQuestions(questionsWithOptions ?? []);
+      if (!questionsRes.ok)
+        throw new Error("Error getting questions");
+      const questions: QuestionWithOptions[] = await questionsRes.json();
+      setQuestions(questions ?? []);
     };
 
     fetchQuestions();
