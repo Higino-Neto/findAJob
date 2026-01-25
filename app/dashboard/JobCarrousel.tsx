@@ -8,16 +8,38 @@ import { Navigation } from "swiper/modules";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Job } from "@/types/job";
-import { ApplicationWithAnswers } from "@/types/applicationWithAnswers";
+import { JobApplicationItemDTO } from "@/types/job-application-list-item.dto";
 import { User } from "../generated/prisma";
 import { QuestionWithOptions } from "@/types/questionsWithOptions";
+
+type ApplicationData = {
+  id: string;
+  username: string | null;
+  email: string | null;
+  questionsWithAnswers: {
+    id: string;
+    type: string;
+    order: number;
+    commandText: string;
+    answer?: string;
+    options?: {
+      id: string;
+      text: string;
+      order: number;
+      questionId: string;
+    }[];
+    selectedOption?: string;
+  }[];
+  appliedAt: string;
+  status: string;
+};
 
 export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [selectedApplication, setSelectedApplication] =
-    useState<ApplicationWithAnswers | null>(null);
+    useState<ApplicationData | null>(null);
 
-  const { data: applications } = useQuery<ApplicationWithAnswers[]>({
+  const { data: applications } = useQuery<JobApplicationItemDTO[]>({
     queryKey: ["applications", selectedJob?.id],
     enabled: !!selectedJob,
     queryFn: async () => {
@@ -25,12 +47,12 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
         `/api/jobs/applications/${selectedJob!.id}`,
       );
       const applications = await applicationsData.json();
-      return (await applications.json()) as ApplicationWithAnswers[];
+      return applications as JobApplicationItemDTO[];
     },
   });
 
   const handleSelectedApplication = async (
-    application: ApplicationWithAnswers,
+    application: JobApplicationItemDTO,
   ) => {
     const userRes = await fetch(`/api/users/${application.userId}`);
     if (!userRes.ok) throw new Error("Error fetching user");
@@ -44,35 +66,49 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
 
     const questionsWithAnswers = [];
 
-    for (const question of questions) {
-      if (question.type === "OPEN") {
+    console.log(questions);
+
+    for (let question of questions) {
+      console.log(question);
+      console.log(questionsWithAnswers);
+      if (question.type === "open") {
+        const answer = answers.find(
+          (answer) => answer.questionId === question.id,
+        );
         questionsWithAnswers.push({
           id: question.id,
+          type: question.type,
           order: question.order,
           commandText: question.text,
-          answer:
-            answers.find((answer) => answer.id === question.id)?.textAnswer ??
-            "",
+          answer: answer?.textAnswer ?? "...",
         });
-      } else if (question.type === "MULTIPLE") {
+      } else if (question.type === "multiple") {
+        const answer = answers.find(
+          (answer) => answer.questionId === question.id,
+        );
         questionsWithAnswers.push({
           id: question.id,
+          type: question.type,
           order: question.order,
           commandText: question.text,
           options: question.options ?? [],
-          selectedOption:
-            answers.find((answer) => answer.id === question.id)?.optionId ?? "",
+          selectedOption: answer?.optionId ?? "...",
         });
       }
     }
 
     const applicationData = {
+      id: application.id,
       username: user.name,
       email: user.email,
       questionsWithAnswers: questionsWithAnswers,
+      appliedAt: application.appliedAt,
+      status: application.status,
     };
 
-    setSelectedApplication(application);
+    console.log(applicationData);
+
+    setSelectedApplication(applicationData);
   };
   return (
     <div>
@@ -103,7 +139,7 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
 
       <div className="flex min-h-screen mt-12">
         <div className="w-1/2 flex text-start flex-col gap-4 p-4 m-3 rounded-lg">
-          <h2>Browse for Jobs</h2>
+          <h2>Browse for Applications</h2>
           {applications?.map((app) => {
             return (
               <div key={app.id}>
@@ -111,9 +147,9 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
                   onClick={() => handleSelectedApplication(app)}
                   className="transition-all shadow-lg duration-500 focus:ring-2 w-full border border-gray-300 text-start bg-white p-4 rounded-lg hover:cursor-pointer"
                 >
-                  <p>{app.id}</p>
+                  <p>{app.user.name}</p>
+                  <p>{app.user.email}</p>
                   <p>{app.status}</p>
-                  <p>{app.userId}</p>
                   <p>{app.appliedAt}</p>
                 </button>
               </div>
@@ -123,9 +159,43 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
         {selectedApplication && (
           <div className=" w-1/2 flex flex-col border border-gray-300 rounded-lg shadow-lg">
             <div className="flex flex-col h-screen text-start bg-white p-4 rounded-lg">
-              <a className="text-2xl">{selectedApplication.id}</a>
-              <a className="">{selectedApplication.userId}</a>
-              <a className="">{selectedApplication.jobId}</a>
+              <a className="text-2xl">{selectedApplication.username}</a>
+              <a className="">{selectedApplication.email}</a>
+              <a className="">
+                {selectedApplication.questionsWithAnswers.map(
+                  (questionWithAnswer) => {
+                    if (questionWithAnswer.type === "open") {
+                      return (
+                        <div key={questionWithAnswer.id}>
+                          <p>{questionWithAnswer.commandText}</p>
+                          <p>{questionWithAnswer.answer}</p>
+                        </div>
+                      );
+                    } else if (questionWithAnswer.type === "multiple") {
+                      return (
+                        <div key={questionWithAnswer.id}>
+                          <p>{questionWithAnswer.commandText}</p>
+                          <div>
+                            {questionWithAnswer.options?.map((option) => (
+                              <p
+                                key={option.id}
+                                className={
+                                  questionWithAnswer.selectedOption ===
+                                  option.id
+                                    ? `text-blue-500`
+                                    : ""
+                                }
+                              >
+                                {option.text}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                  },
+                )}
+              </a>
               <a className="">{selectedApplication.appliedAt}</a>
               <a className="mt-6">{selectedApplication.status}</a>
             </div>

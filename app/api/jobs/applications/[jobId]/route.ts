@@ -16,11 +16,17 @@ export async function GET(
     const { jobId } = await params;
 
     const applicationsWithAnswers = await prisma.application.findMany({
-      where: {
-        jobId: jobId,
-      },
+      where: { jobId },
       include: {
         answers: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
       },
     });
 
