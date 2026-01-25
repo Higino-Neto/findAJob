@@ -5,12 +5,20 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Job } from "@/types/job";
 import { JobApplicationItemDTO } from "@/types/job-application-list-item.dto";
-import { User } from "../generated/prisma";
 import { QuestionWithOptions } from "@/types/questionsWithOptions";
+import { cn } from "@/lib/utils";
 
 type ApplicationData = {
   id: string;
@@ -31,13 +39,21 @@ type ApplicationData = {
     selectedOption?: string;
   }[];
   appliedAt: string;
-  status: string;
+};
+
+type JobStatus = "pending" | "accepted" | "rejected";
+
+const statusColor: Record<JobStatus, string> = {
+  pending: "text-muted-foreground",
+  accepted: "text-green-500",
+  rejected: "text-red-500",
 };
 
 export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [selectedApplication, setSelectedApplication] =
     useState<ApplicationData | null>(null);
+  const [jobStatus, setJobStatus] = useState<JobStatus>("pending");
 
   const { data: applications } = useQuery<JobApplicationItemDTO[]>({
     queryKey: ["applications", selectedJob?.id],
@@ -54,9 +70,9 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
   const handleSelectedApplication = async (
     application: JobApplicationItemDTO,
   ) => {
-    const userRes = await fetch(`/api/users/${application.userId}`);
-    if (!userRes.ok) throw new Error("Error fetching user");
-    const user: User = await userRes.json();
+    // const userRes = await fetch(`/api/users/${application.userId}`);
+    // if (!userRes.ok) throw new Error("Error fetching user");
+    // const user: User = await userRes.json();
 
     const questionsRes = await fetch(`/api/questions/${application.jobId}`);
     if (!questionsRes.ok) throw new Error("Error getting questions");
@@ -99,17 +115,28 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
 
     const applicationData = {
       id: application.id,
-      username: user.name,
-      email: user.email,
+      username: application.user.name,
+      email: application.user.email,
       questionsWithAnswers: questionsWithAnswers,
       appliedAt: application.appliedAt,
-      status: application.status,
     };
 
-    console.log(applicationData);
+    function normalizeJobStatus(value: string): JobStatus {
+      const v = value.toLowerCase();
+      if (v === "pending" || v === "accepted" || v === "rejected") {
+        return v;
+      }
 
+      return "pending";
+    }
+
+    setJobStatus(normalizeJobStatus(application.status));
     setSelectedApplication(applicationData);
   };
+
+  const handleStatusChange = (value: string) => {
+    setJobStatus(value as JobStatus);
+  }
   return (
     <div>
       <Swiper
@@ -166,15 +193,19 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
                   (questionWithAnswer) => {
                     if (questionWithAnswer.type === "open") {
                       return (
-                        <div key={questionWithAnswer.id}>
-                          <p>{questionWithAnswer.commandText}</p>
+                        <div key={questionWithAnswer.id} className="m-1">
+                          <p className="text-xl">
+                            {questionWithAnswer.commandText}
+                          </p>
                           <p>{questionWithAnswer.answer}</p>
                         </div>
                       );
                     } else if (questionWithAnswer.type === "multiple") {
                       return (
-                        <div key={questionWithAnswer.id}>
-                          <p>{questionWithAnswer.commandText}</p>
+                        <div key={questionWithAnswer.id} className="m-1">
+                          <p className="text-xl">
+                            {questionWithAnswer.commandText}
+                          </p>
                           <div>
                             {questionWithAnswer.options?.map((option) => (
                               <p
@@ -196,8 +227,28 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
                   },
                 )}
               </a>
-              <a className="">{selectedApplication.appliedAt}</a>
-              <a className="mt-6">{selectedApplication.status}</a>
+              <a className="mt-6">{selectedApplication.appliedAt}</a>
+              <div className="mt-4">
+                <Select value={jobStatus} onValueChange={handleStatusChange}>
+                  <SelectTrigger
+                    className={cn(
+                      "w-45",
+                      statusColor[jobStatus] ?? "text-muted-foreground",
+                    )}
+                  >
+                    <SelectValue placeholder="(default) PENDING" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending" >PENDING</SelectItem>
+                    <SelectItem value="accepted" className="text-green-500">
+                      ACCEPTED
+                    </SelectItem>
+                    <SelectItem value="rejected" className="text-red-500">
+                      REJECTED
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         )}
