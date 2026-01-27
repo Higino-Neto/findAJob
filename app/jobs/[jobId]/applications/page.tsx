@@ -61,7 +61,7 @@ export default function JobApplication() {
       }
     }
 
-    await fetch("/api/jobs/applications", {
+    await fetch("/api/applications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -78,7 +78,7 @@ export default function JobApplication() {
       curriculumFormData.append("file", file);
       curriculumFormData.append("jobId", jobId);
 
-      await fetch("/api/jobs/applications/upload-curriculum", {
+      await fetch("/api/applications/upload-curriculum", {
         method: "POST",
         body: curriculumFormData,
       });
