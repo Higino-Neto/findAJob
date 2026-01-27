@@ -1,9 +1,9 @@
 "use client";
 
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/navigation";
-import { Navigation } from "swiper/modules";
+// import { Swiper, SwiperSlide } from "swiper/react";
+// import "swiper/css";
+// import "swiper/css/navigation";
+// import { Navigation } from "swiper/modules";
 
 import {
   Select,
@@ -13,12 +13,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Job } from "@/types/job";
 import { JobApplicationItemDTO } from "@/types/job-application-list-item.dto";
 import { QuestionWithOptions } from "@/types/questionsWithOptions";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useDeleteApplicationMutate } from "@/hooks/useDeleteApplicationMutate";
+import { SweperJobs } from "@/components/sweper";
+import PdfPreview from "@/components/pdfPreview";
 
 type ApplicationData = {
   id: string;
@@ -39,9 +51,12 @@ type ApplicationData = {
     selectedOption?: string;
   }[];
   appliedAt: string;
+  status: string;
+  curriculumPath: string;
 };
 
 type JobStatus = "pending" | "accepted" | "rejected";
+type DraftStatus = "rejected" | "accepted" | null;
 
 const statusColor: Record<JobStatus, string> = {
   pending: "text-muted-foreground",
@@ -54,26 +69,33 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
   const [selectedApplication, setSelectedApplication] =
     useState<ApplicationData | null>(null);
   const [jobStatus, setJobStatus] = useState<JobStatus>("pending");
+  const [draftStatus, setDraftStatus] = useState<DraftStatus>(null);
+  const [curriculumUrl, setCurriculumUrl] = useState("");
+  const { mutate } = useDeleteApplicationMutate();
+  const [isClient, setIsClient] = useState(false);
 
   const { data: applications } = useQuery<JobApplicationItemDTO[]>({
     queryKey: ["applications", selectedJob?.id],
     enabled: !!selectedJob,
     queryFn: async () => {
       const applicationsData = await fetch(
-        `/api/jobs/applications/${selectedJob!.id}`,
+        `/api/jobs/${selectedJob!.id}/applications`,
       );
       const applications = await applicationsData.json();
       return applications as JobApplicationItemDTO[];
     },
   });
 
+  useEffect(() => {
+    setSelectedApplication(null);
+    setJobStatus("pending");
+    setDraftStatus(null);
+    setIsClient(true);
+  }, [applications]);
+
   const handleSelectedApplication = async (
     application: JobApplicationItemDTO,
   ) => {
-    // const userRes = await fetch(`/api/users/${application.userId}`);
-    // if (!userRes.ok) throw new Error("Error fetching user");
-    // const user: User = await userRes.json();
-
     const questionsRes = await fetch(`/api/questions/${application.jobId}`);
     if (!questionsRes.ok) throw new Error("Error getting questions");
     const questions: QuestionWithOptions[] = await questionsRes.json();
@@ -82,11 +104,7 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
 
     const questionsWithAnswers = [];
 
-    console.log(questions);
-
     for (let question of questions) {
-      console.log(question);
-      console.log(questionsWithAnswers);
       if (question.type === "open") {
         const answer = answers.find(
           (answer) => answer.questionId === question.id,
@@ -119,50 +137,55 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
       email: application.user.email,
       questionsWithAnswers: questionsWithAnswers,
       appliedAt: application.appliedAt,
+      status: application.status,
+      curriculumPath: application.curriculumPath,
     };
-
-    function normalizeJobStatus(value: string): JobStatus {
-      const v = value.toLowerCase();
-      if (v === "pending" || v === "accepted" || v === "rejected") {
-        return v;
-      }
-
-      return "pending";
-    }
 
     setJobStatus(normalizeJobStatus(application.status));
     setSelectedApplication(applicationData);
+    handleShowCurriculum(application.curriculumPath);
   };
 
-  const handleStatusChange = (value: string) => {
-    setJobStatus(value as JobStatus);
+  function normalizeJobStatus(value: string): JobStatus {
+    const v = value.toLowerCase();
+    if (v === "pending" || v === "accepted" || v === "rejected") {
+      return v;
+    }
+
+    return "pending";
   }
+
+  const handleStatusChange = (value: string) => {
+    setJobStatus(normalizeJobStatus(value));
+    if (value !== "pending") {
+      setDraftStatus(value as DraftStatus);
+    }
+  };
+
+  const handleDeleteApplication = (id: string) => {
+    mutate(id);
+  };
+
+  const handleShowCurriculum = async (curriculumPath: string) => {
+    const fileRes = await fetch(
+      `/api/applications/download-curriculum/${curriculumPath}`,
+    );
+    if (!fileRes.ok) throw new Error("Error getting curriculum");
+    const file = await fileRes.blob();
+    const url = URL.createObjectURL(file);
+    setCurriculumUrl(url);
+  };
+
+  const downloadCV = async (username: string, url: string) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `CV-${username.replaceAll(" ", "-")}.pdf`;
+    a.click();
+  };
+
   return (
     <div>
-      <Swiper
-        spaceBetween={15}
-        slidesPerView={5.5}
-        modules={[Navigation]}
-        navigation
-      >
-        {jobs.map((job) => {
-          return (
-            <SwiperSlide key={job.id}>
-              <button
-                onClick={() => setSelectedJob(job)}
-                className="w-full text-start hover:cursor-pointer rounded bg-white shadow p-2"
-              >
-                <div className="">
-                  <h1>{job.title}</h1>
-                  <p>{job.company}</p>
-                  <p>{job.type}</p>
-                  <p>{job.salary}</p>
-                </div>
-              </button>
-            </SwiperSlide>
-          );
-        })}
-      </Swiper>
+      <SweperJobs jobs={jobs} setSelectedJob={setSelectedJob} />
 
       <div className="flex min-h-screen mt-12">
         <div className="w-1/2 flex text-start flex-col gap-4 p-4 m-3 rounded-lg">
@@ -184,10 +207,25 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
           })}
         </div>
         {selectedApplication && (
-          <div className=" w-1/2 flex flex-col border border-gray-300 rounded-lg shadow-lg">
+          <div className=" w-1/2 flex flex-col border border-gray-300 rounded-lg shadow-lg max-h-screen">
             <div className="flex flex-col h-screen text-start bg-white p-4 rounded-lg">
               <a className="text-2xl">{selectedApplication.username}</a>
               <a className="">{selectedApplication.email}</a>
+
+              <div className="my-4">
+                <div className="max-h-60 max-w-60 w-100 h-60">
+                  {curriculumUrl && isClient && <PdfPreview objectUrl={curriculumUrl} />}
+                </div>
+                <Button
+                  onClick={() =>
+                    downloadCV(selectedApplication.username!, curriculumUrl)
+                  }
+                  className="hover:cursor-pointer mt-2"
+                >
+                  Download CV
+                </Button>
+              </div>
+
               <a className="">
                 {selectedApplication.questionsWithAnswers.map(
                   (questionWithAnswer) => {
@@ -239,7 +277,7 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
                     <SelectValue placeholder="(default) PENDING" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending" >PENDING</SelectItem>
+                    <SelectItem value="pending">PENDING</SelectItem>
                     <SelectItem value="accepted" className="text-green-500">
                       ACCEPTED
                     </SelectItem>
@@ -248,6 +286,67 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+
+                <div>
+                  <Dialog
+                    open={draftStatus === "accepted"}
+                    onOpenChange={(open) => {
+                      if (!open) {
+                        setDraftStatus(null);
+                        setJobStatus(
+                          normalizeJobStatus(selectedApplication.status),
+                        );
+                      }
+                    }}
+                  >
+                    {/* <DialogTrigger>Open</DialogTrigger> */}
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          Are you sure you want to accept/approve this
+                          candidate?
+                        </DialogTitle>
+                        <DialogDescription>
+                          Future description for accept a user here.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Button onClick={() => {}}>Accept</Button>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                <div>
+                  <Dialog
+                    open={draftStatus === "rejected"}
+                    onOpenChange={(open) => {
+                      if (!open) {
+                        setDraftStatus(null);
+                        setJobStatus(
+                          normalizeJobStatus(selectedApplication.status),
+                        );
+                      }
+                    }}
+                  >
+                    {/* <DialogTrigger>Open</DialogTrigger> */}
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          Are you sure you want to reject/reprove this
+                          candidate? (This application will disapear)
+                        </DialogTitle>
+                        <DialogDescription>
+                          Future description to reject a user here.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Button
+                        onClick={() => {
+                          handleDeleteApplication(selectedApplication.id);
+                        }}
+                      >
+                        Reject
+                      </Button>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
             </div>
           </div>
