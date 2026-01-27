@@ -21,12 +21,11 @@ export default function ClientBrowseJobs({ page }: { page: number }) {
   // const [jobs, setJobs] = useState([]);
   const [showJob, setShowJob] = useState<Job | null>(null);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["jobs", page],
     queryFn: async () => {
       const res = await fetch(`/api/jobs?page=${page}`);
       return await res.json();
-      
     },
 
     placeholderData: keepPreviousData,
@@ -38,9 +37,6 @@ export default function ClientBrowseJobs({ page }: { page: number }) {
 
   const totalPages = data ? Math.ceil(data.totalJobs / data.take) : 1;
   const jobs = data?.jobs ?? [];
-
-  console.log(totalPages);
-  console.log(jobs);
 
   const onPageChange = (page: number) => {
     router.push(`?page=${page}`);
@@ -81,7 +77,7 @@ export default function ClientBrowseJobs({ page }: { page: number }) {
           <div className="flex flex-col h-screen text-start bg-white p-4 rounded-lg">
             <a className="text-2xl">{showJob.title}</a>
             <button
-              onClick={() => router.push(`/jobs/application/${showJob.id}`)}
+              onClick={() => router.push(`/jobs/${showJob.id}/applications`)}
               className="bg-indigo-500 w-40 px-2 py-1 rounded-md shadow-md mt-6 mb-3 text-gray-50 hover:cursor-pointer"
             >
               Apply to this job

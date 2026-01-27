@@ -4,17 +4,7 @@ import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ApplicationStatus } from "@/app/generated/prisma";
-
-type Question = {
-  id: string;
-  type: "open" | "multiple";
-  text?: string;
-  options?: {
-    id: string;
-    text: string;
-    order: number;
-  }[];
-};
+import { QuestionWithOptions } from "@/types/questionsWithOptions";
 
 export default function JobApplication() {
   const { data: session } = useSession();
@@ -22,13 +12,17 @@ export default function JobApplication() {
   const jobId = params.jobId as string;
 
   const [file, setFile] = useState<File | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<QuestionWithOptions[]>([]);
   const [formKey, setFormKey] = useState(0);
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      const data = await fetch(`/api/questions/${jobId}`);
-      const questions = await data.json();
+      const questionsRes = await fetch(
+        `/api/questions/${jobId}`,
+      );
+      if (!questionsRes.ok)
+        throw new Error("Error getting questions");
+      const questions: QuestionWithOptions[] = await questionsRes.json();
       setQuestions(questions ?? []);
     };
 
@@ -67,7 +61,7 @@ export default function JobApplication() {
       }
     }
 
-    await fetch("/api/jobs/applications", {
+    await fetch("/api/applications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -77,14 +71,14 @@ export default function JobApplication() {
         answers: answerData,
       }),
     });
-    
+
     const curriculumFormData = new FormData();
 
     if (file) {
       curriculumFormData.append("file", file);
       curriculumFormData.append("jobId", jobId);
 
-      await fetch("/api/jobs/applications/upload-curriculum", {
+      await fetch("/api/applications/upload-curriculum", {
         method: "POST",
         body: curriculumFormData,
       });

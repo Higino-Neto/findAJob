@@ -1,6 +1,5 @@
 import { authOptions } from "@/authConfig";
 import { prisma } from "@/lib/prisma";
-import { QuestionWithOptions } from "@/types/questionsWithOptions";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -9,27 +8,31 @@ export async function GET(
   { params }: { params: Promise<{ jobId: string }> },
 ) {
   const session = await getServerSession(authOptions);
-
   if (!session) {
     return NextResponse.redirect(new URL("/auth/signin", request.url));
   }
-  const { jobId } = await params;
 
   try {
-    const questions: QuestionWithOptions[] = await prisma.question.findMany({
-      where: {
-        jobId: jobId,
-      },
+    const { jobId } = await params;
+
+    const applicationsWithAnswers = await prisma.application.findMany({
+      where: { jobId },
       include: {
-        options: true,
-      },
-      orderBy: {
-        order: "asc",
+        answers: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
       },
     });
-    return NextResponse.json(questions);
+
+    return NextResponse.json(applicationsWithAnswers);
   } catch (error) {
-    console.error("Error getting questions: ", error);
+    console.error("Error getting applications by JobId: ", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
