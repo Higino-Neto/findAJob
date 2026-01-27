@@ -1,10 +1,5 @@
 "use client";
 
-// import { Swiper, SwiperSlide } from "swiper/react";
-// import "swiper/css";
-// import "swiper/css/navigation";
-// import { Navigation } from "swiper/modules";
-
 import {
   Select,
   SelectContent,
@@ -28,7 +23,7 @@ import { JobApplicationItemDTO } from "@/types/job-application-list-item.dto";
 import { QuestionWithOptions } from "@/types/questionsWithOptions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useDeleteApplicationMutate } from "@/hooks/useDeleteApplicationMutate";
+import { useChangeStatusApplicationMutate } from "@/hooks/useChangeStatusApplicationMutate";
 import { SweperJobs } from "@/components/sweper";
 import PdfPreview from "@/components/pdfPreview";
 
@@ -71,7 +66,7 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
   const [jobStatus, setJobStatus] = useState<JobStatus>("pending");
   const [draftStatus, setDraftStatus] = useState<DraftStatus>(null);
   const [curriculumUrl, setCurriculumUrl] = useState("");
-  const { mutate } = useDeleteApplicationMutate();
+  const { mutate } = useChangeStatusApplicationMutate();
   const [isClient, setIsClient] = useState(false);
 
   const { data: applications } = useQuery<JobApplicationItemDTO[]>({
@@ -143,6 +138,7 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
 
     setJobStatus(normalizeJobStatus(application.status));
     setSelectedApplication(applicationData);
+    setCurriculumUrl("");
     handleShowCurriculum(application.curriculumPath);
   };
 
@@ -162,8 +158,21 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
     }
   };
 
-  const handleDeleteApplication = (id: string) => {
-    mutate(id);
+  const handleRejectApplication = async (
+    applicationId: string,
+    applicationStatus: string,
+  ) => {
+    await fetch(
+      `/api/applications/delete-curriculum/${selectedApplication!.curriculumPath}`,
+      {
+        method: "DELETE",
+      },
+    );
+
+    mutate({
+      applicationId: applicationId,
+      applicationStatus: applicationStatus,
+    });
   };
 
   const handleShowCurriculum = async (curriculumPath: string) => {
@@ -191,42 +200,48 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
         <div className="w-1/2 flex text-start flex-col gap-4 p-4 m-3 rounded-lg">
           <h2>Browse for Applications</h2>
           {applications?.map((app) => {
-            return (
-              <div key={app.id}>
-                <button
-                  onClick={() => handleSelectedApplication(app)}
-                  className="transition-all shadow-lg duration-500 focus:ring-2 w-full border border-gray-300 text-start bg-white p-4 rounded-lg hover:cursor-pointer"
-                >
-                  <p>{app.user.name}</p>
-                  <p>{app.user.email}</p>
-                  <p>{app.status}</p>
-                  <p>{app.appliedAt}</p>
-                </button>
-              </div>
-            );
+            if (app.status !== "REJECTED") {
+              return (
+                <div key={app.id}>
+                  <button
+                    onClick={() => handleSelectedApplication(app)}
+                    className="transition-all shadow-lg duration-500 focus:ring-2 w-full border border-gray-300 text-start bg-white p-4 rounded-lg hover:cursor-pointer"
+                  >
+                    <p>{app.user.name}</p>
+                    <p>{app.user.email}</p>
+                    <p>{app.status}</p>
+                    <p>{app.appliedAt}</p>
+                  </button>
+                </div>
+              );
+            }
           })}
         </div>
         {selectedApplication && (
-          <div className=" w-1/2 flex flex-col border border-gray-300 rounded-lg shadow-lg max-h-screen">
-            <div className="flex flex-col h-screen text-start bg-white p-4 rounded-lg">
+          <div className=" w-1/2 flex flex-col border border-gray-300 rounded-lg shadow-lg">
+            <div className="flex flex-col min-h-screen text-start bg-white p-5 rounded-lg">
               <a className="text-2xl">{selectedApplication.username}</a>
               <a className="">{selectedApplication.email}</a>
 
-              <div className="my-4">
-                <div className="max-h-60 max-w-60 w-100 h-60">
-                  {curriculumUrl && isClient && <PdfPreview objectUrl={curriculumUrl} />}
+              <div className="">
+                <h1 className="text-2xl mt-5">Curriculum</h1>
+                <div className="max-h-60 max-w-60 w-100 h-60 my-3">
+                  {curriculumUrl && isClient && (
+                    <PdfPreview key={curriculumUrl} objectUrl={curriculumUrl} />
+                  )}
                 </div>
                 <Button
                   onClick={() =>
                     downloadCV(selectedApplication.username!, curriculumUrl)
                   }
-                  className="hover:cursor-pointer mt-2"
+                  className="hover:cursor-pointer mb-3"
                 >
                   Download CV
                 </Button>
               </div>
 
               <a className="">
+                <h1 className="text-2xl my-3 mt-10">Questions</h1>
                 {selectedApplication.questionsWithAnswers.map(
                   (questionWithAnswer) => {
                     if (questionWithAnswer.type === "open") {
@@ -299,7 +314,6 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
                       }
                     }}
                   >
-                    {/* <DialogTrigger>Open</DialogTrigger> */}
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>
@@ -326,7 +340,6 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
                       }
                     }}
                   >
-                    {/* <DialogTrigger>Open</DialogTrigger> */}
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>
@@ -339,7 +352,10 @@ export default function JobCarrousel({ jobs }: { jobs: Job[] }) {
                       </DialogHeader>
                       <Button
                         onClick={() => {
-                          handleDeleteApplication(selectedApplication.id);
+                          handleRejectApplication(
+                            selectedApplication.id,
+                            "REJECTED",
+                          );
                         }}
                       >
                         Reject

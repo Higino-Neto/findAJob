@@ -36,6 +36,7 @@ export async function DELETE(
   if (!session) {
     return NextResponse.redirect(new URL("auth/signin", request.url));
   }
+
   try {
     const { id } = await params;
 
