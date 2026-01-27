@@ -28,24 +28,25 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.redirect(new URL("auth/signin", request.url));
-  }
-  try {
-    const { id } = await params;
+// export async function DELETE(
+//   request: Request,
+//   { params }: { params: Promise<{ id: string }> },
+// ) {
+//   const session = await getServerSession(authOptions);
+//   if (!session) {
+//     return NextResponse.redirect(new URL("auth/signin", request.url));
+//   }
 
-    const deletedApplication = await prisma.application.delete({
-      where: { id },
-    });
+//   try {
+//     const { id } = await params;
 
-    return NextResponse.json(deletedApplication);
-  } catch (error) {
-    console.error("Error deleting application: ", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
-  }
-}
+//     const deletedApplication = await prisma.application.delete({
+//       where: { id },
+//     });
+
+//     return NextResponse.json(deletedApplication);
+//   } catch (error) {
+//     console.error("Error deleting application: ", error);
+//     return new NextResponse("Internal Server Error", { status: 500 });
+//   }
+// }
