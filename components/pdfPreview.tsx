@@ -5,13 +5,12 @@ import dynamic from "next/dynamic";
 
 const Document = dynamic(
   () => import("react-pdf").then((mod) => mod.Document),
-  { ssr: false }
+  { ssr: false },
 );
 
-const Page = dynamic(
-  () => import("react-pdf").then((mod) => mod.Page),
-  { ssr: false }
-);
+const Page = dynamic(() => import("react-pdf").then((mod) => mod.Page), {
+  ssr: false,
+});
 
 if (typeof window !== "undefined") {
   import("react-pdf").then((pdfjs) => {
@@ -28,8 +27,12 @@ export default function PdfPreview({ objectUrl }: { objectUrl: string }) {
   return (
     <div className="w-full h-full overflow-hidden flex justify-center border rounded shadow">
       <Document
+        key={objectUrl}
         file={objectUrl}
         onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={(error) => {
+          console.error("Error Rendering File: ", error);
+        }}
         loading={<p>Loading Preview...</p>}
       >
         <Page
