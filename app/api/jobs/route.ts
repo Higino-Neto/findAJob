@@ -63,6 +63,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
+  const session = await getServerSession();
   const { searchParams } = new URL(request.url);
 
   const page = Number(searchParams.get("page") ?? 1);
@@ -74,10 +75,22 @@ export async function GET(request: Request) {
     const jobs = await prisma.job.findMany({
       take,
       skip,
+      include: {
+        applications: {
+          where: {
+            userId: session?.user.id,
+          },
+          select: {
+            userId: true,
+          },
+        },
+      },
+
       orderBy: {
         postedAt: "desc",
       },
     });
+
     return NextResponse.json({ jobs, totalJobs, take });
   } catch (error) {
     console.error("Error getting jobs: ", error);
