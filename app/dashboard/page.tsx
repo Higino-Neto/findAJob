@@ -11,12 +11,15 @@ export default async function Dashboard() {
     redirect("/auth/signin");
   }
   const jobs: Job[] = await prisma.job.findMany({
-    where: {
-      postedById: session.user.id,
-    },
+    // Eu documentei essa linha para fins de teste (Pois eu estou em outro usuário e preciso ter acesso a todos os jobs)
+    // Tire o comentário das linhas abaixo:
+    // where: {
+    //   postedById: session.user.id,
+    // },
   });
   return (
     <div>
+      <h1></h1>
       <div>
         <JobCarrousel jobs={jobs} />
       </div>
