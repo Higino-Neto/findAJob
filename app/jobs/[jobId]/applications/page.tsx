@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ApplicationStatus } from "@/app/generated/prisma";
+import { ApplicationStatus } from "@/generated/prisma";
 import { QuestionWithOptions } from "@/types/questionsWithOptions";
 
 export default function JobApplication() {
