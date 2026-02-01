@@ -1,6 +1,6 @@
 "use client";
-import JobInput from "@/components/JobInput";
-import Questions from "@/components/Questions";
+import JobInput from "@/components/jobs/post/JobInput";
+import Questions from "@/components/jobs/post/Questions";
 import { useState } from "react";
 
 type Question = {

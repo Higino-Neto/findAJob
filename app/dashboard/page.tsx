@@ -2,8 +2,8 @@ import { authOptions } from "@/authConfig";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import JobCarrousel from "./JobCarrousel";
 import type {Job} from "@/types/job";
+import ClientSidePage from "../../components/dashboard/ClientSidePage";
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
@@ -18,11 +18,8 @@ export default async function Dashboard() {
     // },
   });
   return (
-    <div>
-      <h1></h1>
       <div>
-        <JobCarrousel jobs={jobs} />
+        <ClientSidePage jobs={jobs} />
       </div>
-    </div>
   );
 }
