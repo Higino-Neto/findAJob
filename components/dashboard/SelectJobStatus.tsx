@@ -16,7 +16,6 @@ import {
 } from "@/components/shadcn-ui/dialog";
 import { useEffect, useState } from "react";
 import { useChangeStatusApplicationMutate } from "@/hooks/useChangeStatusApplicationMutate";
-import { JobApplicationItemDTO } from "@/types/job-application-list-item.dto";
 import { ApplicationData } from "@/types/application-data.dto";
 import { Button } from "../shadcn-ui/button";
 
@@ -24,7 +23,6 @@ type JobStatus = "pending" | "accepted" | "rejected";
 type DraftStatus = "rejected" | "accepted" | null;
 
 type SelectJobStatusProps = {
-  applications: JobApplicationItemDTO[] | undefined;
   selectedApplication: ApplicationData | null;
 };
 
@@ -35,7 +33,6 @@ const statusColor: Record<JobStatus, string> = {
 };
 
 export default function SelectJobStatus({
-  applications,
   selectedApplication,
 }: SelectJobStatusProps) {
   const [jobStatus, setJobStatus] = useState<JobStatus>("pending");
@@ -43,12 +40,8 @@ export default function SelectJobStatus({
   const { mutate } = useChangeStatusApplicationMutate();
 
   useEffect(() => {
-    setJobStatus("pending");
     setDraftStatus(null);
-  }, [applications]);
-
-  useEffect(() => {
-    setJobStatus(normalizeJobStatus(selectedApplication?.status ?? "pending"))
+    setJobStatus(normalizeJobStatus(selectedApplication?.status ?? "pending"));
   }, [selectedApplication]);
 
   function normalizeJobStatus(value: string): JobStatus {
