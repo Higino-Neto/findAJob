@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "../shadcn-ui/button";
-import PdfPreview from "../pdfPreview";
+import PdfPreview from "./pdfPreview";
 import { ApplicationData } from "@/types/application-data.dto";
 
 type CurriculumProps = {
@@ -72,7 +72,7 @@ export default function Curriculum({ selectedApplication }: CurriculumProps) {
   };
   return (
     <>
-      <div className="max-h-60 max-w-60 w-100 h-60 my-3">
+      <div className="w-60 h-78 mt-3">
         {curriculumUrl && isClient && (
           <PdfPreview key={curriculumUrl} objectUrl={curriculumUrl} />
         )}
