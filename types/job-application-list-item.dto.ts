@@ -1,4 +1,4 @@
-import { ApplicationStatus } from "@/app/generated/prisma";
+import { ApplicationStatus } from "@/generated/prisma";
 
 export type JobApplicationItemDTO = {
     user: {

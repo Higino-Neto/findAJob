@@ -14,7 +14,6 @@ export async function GET(
   try {
     const { curriculumPath } = await params;
     const [userIdPath, jobIdPath] = curriculumPath;
-    console.log(curriculumPath);
 
     const { data, error } = await supabaseAdmin.storage
       .from("curriculum")
@@ -22,7 +21,11 @@ export async function GET(
     if (error) {
       throw new Error("Error fetching from Object Storage: ", error);
     }
-    return new NextResponse(data);
+    return new NextResponse(data, {
+      headers: {
+        "Content-Type": "application/pdf",
+      },
+    });
   } catch (error) {
     console.error("Error getting curriculum from Object Storage");
     return new NextResponse("Internal Server Error", { status: 500 });

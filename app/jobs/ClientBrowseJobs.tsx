@@ -5,18 +5,6 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-// type Job = {
-//   id: string;
-//   type: string;
-//   title: string;
-//   company: string;
-//   location: string;
-//   description: string;
-//   salary: string | null;
-//   postedAt: Date;
-//   postedById: string;
-// };
-
 type Job = {
   applications: {
     userId: string;
@@ -29,13 +17,12 @@ type Job = {
   location: string;
   description: string;
   salary: string | null;
-  postedAt: Date;
+  postedAt: string;
   postedById: string;
 };
 
 export default function ClientBrowseJobs({ page }: { page: number }) {
   const router = useRouter();
-  // const [jobs, setJobs] = useState([]);
   const [showJob, setShowJob] = useState<Job | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -89,21 +76,27 @@ export default function ClientBrowseJobs({ page }: { page: number }) {
         />
       </div>
       {showJob && (
-        <div className=" w-1/2 flex flex-col border border-gray-300 rounded-lg shadow-lg">
-          <div className="flex flex-col h-screen text-start bg-white p-4 rounded-lg">
+        <div className=" w-1/2 sticky top-4 max-h-[calc(100vh-1rem)] overflow-y-auto flex flex-col ">
+          <div className="flex flex-col text-start bg-white p-4 rounded-md border shadow-lg">
             <a className="text-2xl">{showJob.title}</a>
-            {/* <button
-              onClick={() => router.push(`/jobs/${showJob.id}/applications`)}
-              className="bg-indigo-500 w-40 px-2 py-1 rounded-md shadow-md mt-6 mb-3 text-gray-50 hover:cursor-pointer"
-            >
-              Apply to this job
-            </button> */}
-            <ApplyButton jobId={showJob.id} hasApplied={showJob.applications.length > 0} />
-            <a className="">{showJob.type}</a>
-            <a className="">{showJob.company}</a>
-            <a className="">{showJob.location}</a>
-            <a className="mt-6">{showJob.description}</a>
-            <a className="">{showJob.salary}</a>
+            <ApplyButton
+              jobId={showJob.id}
+              hasApplied={showJob.applications.length > 0}
+            />
+            <div className="flex flex-col gap-2">
+              <a className="text-xl">Type: </a>
+              <a className="">{showJob.type}</a>
+              <a className="text-xl">Company: </a>
+              <a className="">{showJob.company}</a>
+              <a className="text-xl">Location: </a>
+              <a className="">{showJob.location}</a>
+              <a className="text-xl">Description: </a>
+              <a className="">{showJob.description}</a>
+              <a className="text-xl">Salary: </a>
+              <a className="">{showJob.salary}</a>
+              <a className="text-xl">Posted at: </a>
+              <a className="">{showJob.postedAt}</a>
+            </div>
           </div>
         </div>
       )}
