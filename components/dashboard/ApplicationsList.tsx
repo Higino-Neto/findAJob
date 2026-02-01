@@ -1,8 +1,7 @@
 import { ApplicationData } from "@/types/application-data.dto";
 import { JobApplicationItemDTO } from "@/types/job-application-list-item.dto";
 import { QuestionWithOptions } from "@/types/questionsWithOptions";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import SelectedApplication from "./SelectedApplication";
+import { Dispatch, SetStateAction, useEffect } from "react";
 
 type ApplicationsListProps = {
   applications: JobApplicationItemDTO[] | undefined;
