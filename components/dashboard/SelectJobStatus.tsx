@@ -39,11 +39,6 @@ export default function SelectJobStatus({
   const [draftStatus, setDraftStatus] = useState<DraftStatus>(null);
   const { mutate } = useChangeStatusApplicationMutate();
 
-  useEffect(() => {
-    setDraftStatus(null);
-    setJobStatus(normalizeJobStatus(selectedApplication?.status ?? "pending"));
-  }, [selectedApplication]);
-
   function normalizeJobStatus(value: string): JobStatus {
     const v = value.toLowerCase();
     if (v === "pending" || v === "accepted" || v === "rejected") {
@@ -53,6 +48,11 @@ export default function SelectJobStatus({
     return "pending";
   }
 
+  useEffect(() => {
+    setDraftStatus(null);
+    setJobStatus(normalizeJobStatus(selectedApplication?.status ?? "pending"));
+  }, [selectedApplication]);
+  
   const handleStatusChange = (value: string) => {
     setJobStatus(normalizeJobStatus(value));
     if (value !== "pending") {
