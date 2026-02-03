@@ -2,10 +2,10 @@ import { ApplicationStatus } from "@/generated/prisma";
 
 export type JobApplicationItemDTO = {
     user: {
-        name: string | null;
+        name?: string | null;
         id: string;
-        email: string | null;
-        image: string | null;
+        email?: string | null;
+        image?: string | null;
     };
     answers: {
         id: string;

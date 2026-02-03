@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { SwiperJobs } from "../SwiperJobs";
-import jobFactory from "./factories/jobFactory";
+import jobFactory from "./factories/job.factory";
 import "@testing-library/jest-dom";
 
 jest.mock("swiper/react", () => {

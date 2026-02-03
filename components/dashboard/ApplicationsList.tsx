@@ -58,8 +58,8 @@ export default function ApplicationsList({
 
     const applicationData = {
       id: application.id,
-      username: application.user.name,
-      email: application.user.email,
+      username: application.user.name ?? null,
+      email: application.user.email ?? null,
       questionsWithAnswers: questionsWithAnswers,
       appliedAt: application.appliedAt,
       status: application.status,
