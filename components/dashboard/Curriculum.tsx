@@ -21,15 +21,6 @@ export default function Curriculum({ selectedApplication }: CurriculumProps) {
     };
   }, [curriculumUrl]);
 
-  useEffect(() => {
-    if (!selectedApplication?.curriculumPath) {
-      setCurriculumUrl("");
-      return;
-    }
-    setIsClient(true);
-    handleShowCurriculum(selectedApplication.curriculumPath);
-  }, [selectedApplication]);
-
   const handleShowCurriculum = async (curriculumPath: string) => {
     try {
       const fileRes = await fetch(
@@ -49,6 +40,14 @@ export default function Curriculum({ selectedApplication }: CurriculumProps) {
         );
         return;
       }
+      useEffect(() => {
+        if (!selectedApplication?.curriculumPath) {
+          setCurriculumUrl("");
+          return;
+        }
+        setIsClient(true);
+        handleShowCurriculum(selectedApplication.curriculumPath);
+      }, [selectedApplication]);
 
       const file = await fileRes.blob();
 

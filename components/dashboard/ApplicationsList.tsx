@@ -29,7 +29,7 @@ export default function ApplicationsList({
 
     const questionsWithAnswers = [];
 
-    for (let question of questions) {
+    for (const question of questions) {
       if (question.type === "open") {
         const answer = answers.find(
           (answer) => answer.questionId === question.id,

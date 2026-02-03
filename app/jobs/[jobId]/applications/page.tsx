@@ -42,7 +42,7 @@ export default function JobApplication() {
 
     const answerData = [];
 
-    for (let question of questions) {
+    for (const question of questions) {
       if (question.type === "open") {
         const textAnswer = formData.get(question.id) as string;
         answerData.push({
