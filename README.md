@@ -112,7 +112,7 @@ pnpm test
 
 ## Project Structure
 
-![Codebase Graph](public\Codebase_Graph.png)
+![Codebase Graph](Codebase_Graph.png)
 
 
 ```
