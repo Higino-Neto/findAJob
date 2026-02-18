@@ -40,14 +40,6 @@ export default function Curriculum({ selectedApplication }: CurriculumProps) {
         );
         return;
       }
-      useEffect(() => {
-        if (!selectedApplication?.curriculumPath) {
-          setCurriculumUrl("");
-          return;
-        }
-        setIsClient(true);
-        handleShowCurriculum(selectedApplication.curriculumPath);
-      }, [selectedApplication]);
 
       const file = await fileRes.blob();
 
@@ -62,6 +54,15 @@ export default function Curriculum({ selectedApplication }: CurriculumProps) {
       return;
     }
   };
+
+  useEffect(() => {
+    if (!selectedApplication?.curriculumPath) {
+      setCurriculumUrl("");
+      return;
+    }
+    setIsClient(true);
+    handleShowCurriculum(selectedApplication.curriculumPath);
+  }, [selectedApplication]);
 
   const downloadCV = async (username: string, url: string) => {
     const a = document.createElement("a");

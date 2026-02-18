@@ -114,6 +114,9 @@ pnpm test
 
 ## Project Structure
 
+![Codebase Graph](public/Codebase_Graph.png)
+
+
 ```
 findAJob/
 ├── app/              # Next.js app directory (routes, layouts)
