@@ -2,9 +2,11 @@
 
 findAJob is a modern, full-stack job board platform inspired by Glassdoor and similar services, where employers can post job openings and candidates can easily browse and apply.
 
+## Preview
+
+![Browse Job Page Preview](./public/browse_job_page.png)
+
 ## Features
-
-
 
 ### Core Job Board Functionality
 - **Post job openings** — Employers can create, edit, and manage job listings with essential details.
